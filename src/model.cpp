@@ -116,9 +116,9 @@ void ConfigModel::setupConfig()
                                     QRegularExpression::DontCaptureOption
                                     | QRegularExpression::OptimizeOnFirstUsageOption);
     regex1->optimize();
-    QStandardItem *levelTop = this->invisibleRootItem();
-    QStandardItem *levelOne = new QStandardItem();
-    QStandardItem *levelTwo = new QStandardItem();
+    levelTop = this->invisibleRootItem();
+    levelOne = new QStandardItem();
+    levelTwo = new QStandardItem();
     logParseTimeMs = 0;
     logParseTime.start();
     qDebug("Setup time: %d ms", setupTime.elapsed());
