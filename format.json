@@ -1,0 +1,29 @@
+{
+    "sounds": [
+        {
+            "channel": "music|weather|herp|derp",
+            "concurrency": 5,
+            "delay": 1500,
+            "logPattern": "regex",
+            "loop": "start|stop",
+            "multipleMatch": true,
+            "probability": 100,
+            "runLevel": 5,
+            "soundFile": [
+                {
+                    "attribution": {
+                        "author": "Herpington Derpson",
+                        "description": "A glorious dwarven burp",
+                        "license": "CC BY 3.0",
+                        "url": "https://herp.derp.org/herpderp.derp/"
+                    },
+                    "balance": "left|right|random",
+                    "filename": "../herp/derp.ogg",
+                    "volumeAdjustment": "+5|-6|100|30",
+                    "weight": 5
+                }
+            ],
+            "timeout": 7
+        }
+    ]
+}
