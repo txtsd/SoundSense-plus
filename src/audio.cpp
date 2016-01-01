@@ -18,7 +18,6 @@
  */
 
 #include "inc/audio.h"
-// #include "inc/log.h"
 
 
 AudioThing::AudioThing(QObject *parent)
@@ -43,10 +42,4 @@ void AudioThing::playSfx()
 
 void AudioThing::playMusic()
 {
-}
-
-void AudioThing::parsePattern(QString line)
-{
-    QRegularExpression *regex = new QRegularExpression("dat pattern doe");
-    QRegularExpressionMatch match = regex->match(line);
 }

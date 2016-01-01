@@ -22,10 +22,6 @@
 
 #include <QtMultimedia/QMediaPlayer>
 #include <QtCore/QDebug>
-#include <QtCore/QJsonObject>
-#include <QtCore/QRegularExpression>
-#include <QtCore/QRegularExpressionMatch>
-#include <QtMultimedia/QAudioDeviceInfo>
 
 
 class AudioThing : public QMediaPlayer
@@ -40,7 +36,6 @@ class AudioThing : public QMediaPlayer
   public slots:
     void playSfx();
     void playMusic();
-    void parsePattern(QString);
 
   private:
     QList<AudioThing> channelList;
