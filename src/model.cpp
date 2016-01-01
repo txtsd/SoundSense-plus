@@ -57,46 +57,52 @@ void ConfigModel::setupConfig()
             if (jsonFile->open(QIODevice::ReadOnly | QIODevice::Text)) {
                 QString jsonFileData = jsonFile->readAll();
                 QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonFileData.toUtf8());
-                QJsonArray sounds = jsonDoc.object().value("sounds").toArray();
-                QStandardItem *fileItem = new QStandardItem(filename/*.remove(0, 45)*/);
-                fileItem->setIcon(QIcon(":/folder.svg"));
-                fileItem->setFlags(Qt::ItemIsEnabled);
-                parentItem->appendRow(fileItem);
-                parentItem = fileItem;
 
-                foreach (const QJsonValue &value, sounds) {
-                    QJsonObject soundObject = value.toObject();
-                    QString pattern = soundObject.value("logPattern").toString();
-                    QStandardItem *patternItem = new QStandardItem(pattern);
-                    patternItem->setIcon(QIcon(":/library_music.svg"));
-                    patternItem->setFlags(Qt::ItemIsEnabled);
-                    QRegularExpression regex(pattern,
-                                             QRegularExpression::DontCaptureOption
-                                             | QRegularExpression::OptimizeOnFirstUsageOption);
-                    regex.optimize();
-                    QVariant regexQV(regex);
-                    patternItem->setData(regexQV);
-                    parentItem->appendRow(patternItem);
-                    parentItem = patternItem;
+                if (jsonDoc.isObject() && jsonDoc.object().contains("sounds")) {
+                    QJsonArray sounds = jsonDoc.object().value("sounds").toArray();
+                    QStandardItem *fileItem = new QStandardItem(filename/*.remove(0, 45)*/);
+                    fileItem->setIcon(QIcon(":/folder.svg"));
+                    fileItem->setFlags(Qt::ItemIsEnabled);
+                    parentItem->appendRow(fileItem);
+                    parentItem = fileItem;
 
-                    if (soundObject.contains("soundFile")) {
-                        QJsonArray soundFiles = soundObject.value("soundFile").toArray();
+                    foreach (const QJsonValue &value, sounds) {
+                        QJsonObject soundObject = value.toObject();
 
-                        foreach (const QJsonValue &value2, soundFiles) {
-                            QJsonObject soundFileObject = value2.toObject();
-                            QString soundFileName = soundFileObject.value("filename").toString();
-                            QStandardItem *filenameItem = new QStandardItem(soundFileName);
-                            filenameItem->setIcon(QIcon(":/audiotrack.svg"));
-                            filenameItem->setFlags(Qt::ItemIsEnabled
-                                                   | Qt::ItemNeverHasChildren);
-                            parentItem->appendRow(filenameItem);
+                        if (soundObject.contains("logPattern")) {
+                            QString pattern = soundObject.value("logPattern").toString();
+                            QStandardItem *patternItem = new QStandardItem(pattern);
+                            QRegularExpression regex(pattern,
+                                                     QRegularExpression::DontCaptureOption
+                                                     | QRegularExpression::OptimizeOnFirstUsageOption);
+                            regex.optimize();
+                            QVariant regexQV(regex);
+                            patternItem->setIcon(QIcon(":/library_music.svg"));
+                            patternItem->setFlags(Qt::ItemIsEnabled);
+                            patternItem->setData(regexQV);
+                            parentItem->appendRow(patternItem);
+                            parentItem = patternItem;
+
+                            if (soundObject.contains("soundFile")) {
+                                QJsonArray soundFiles = soundObject.value("soundFile").toArray();
+
+                                foreach (const QJsonValue &value2, soundFiles) {
+                                    QJsonObject soundFileObject = value2.toObject();
+                                    QString soundFileName = soundFileObject.value("filename").toString();
+                                    QStandardItem *filenameItem = new QStandardItem(soundFileName);
+                                    filenameItem->setIcon(QIcon(":/audiotrack.svg"));
+                                    filenameItem->setFlags(Qt::ItemIsEnabled
+                                                           | Qt::ItemNeverHasChildren);
+                                    parentItem->appendRow(filenameItem);
+                                }
+                            }
+
+                            parentItem = parentItem->parent();
                         }
                     }
 
                     parentItem = parentItem->parent();
                 }
-
-                parentItem = parentItem->parent();
             }
 
             else {
