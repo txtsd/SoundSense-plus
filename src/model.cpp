@@ -39,39 +39,45 @@ void ConfigModel::setupConfig()
     setupTime.start();
     emit btnPbToggle();
     clear();
+    QString filename, jsonFileData, pattern, soundFileName;
+    QStandardItem *parentItem, *fileItem, *patternItem, *filenameItem;
+    QFile *jsonFile;
+    QJsonDocument jsonDoc;
+    QJsonArray sounds, soundFiles;
+    QJsonObject soundObject, soundFileObject;
     it = new QDirIterator("test/packs/",
                           QStringList() << "*.json", QDir::Files,
                           QDirIterator::Subdirectories);
 
     while (it->hasNext()) {
-        QString filename = it->next();
+        filename = it->next();
         // qDebug() << filename;
-        QStandardItem *parentItem = this->invisibleRootItem();
+        parentItem = this->invisibleRootItem();
 
         if (!filename.endsWith("customHost.json")
                 && !filename.endsWith("autoUpdater.json")) {
-            QFile *jsonFile = new QFile();
+            jsonFile = new QFile();
             jsonFile->setFileName(filename);
             // qDebug() << filename;
 
             if (jsonFile->open(QIODevice::ReadOnly | QIODevice::Text)) {
-                QString jsonFileData = jsonFile->readAll();
-                QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonFileData.toUtf8());
+                jsonFileData = jsonFile->readAll();
+                jsonDoc = QJsonDocument::fromJson(jsonFileData.toUtf8());
 
                 if (jsonDoc.isObject() && jsonDoc.object().contains("sounds")) {
-                    QJsonArray sounds = jsonDoc.object().value("sounds").toArray();
-                    QStandardItem *fileItem = new QStandardItem(filename/*.remove(0, 45)*/);
+                    sounds = jsonDoc.object().value("sounds").toArray();
+                    fileItem = new QStandardItem(filename/*.remove(0, 45)*/);
                     fileItem->setIcon(QIcon(":/folder.svg"));
                     fileItem->setFlags(Qt::ItemIsEnabled);
                     parentItem->appendRow(fileItem);
                     parentItem = fileItem;
 
                     foreach (const QJsonValue &value, sounds) {
-                        QJsonObject soundObject = value.toObject();
+                        soundObject = value.toObject();
 
                         if (soundObject.contains("logPattern")) {
-                            QString pattern = soundObject.value("logPattern").toString();
-                            QStandardItem *patternItem = new QStandardItem(pattern);
+                            pattern = soundObject.value("logPattern").toString();
+                            patternItem = new QStandardItem(pattern);
                             QRegularExpression regex(pattern,
                                                      QRegularExpression::DontCaptureOption
                                                      | QRegularExpression::OptimizeOnFirstUsageOption);
@@ -84,12 +90,12 @@ void ConfigModel::setupConfig()
                             parentItem = patternItem;
 
                             if (soundObject.contains("soundFile")) {
-                                QJsonArray soundFiles = soundObject.value("soundFile").toArray();
+                                soundFiles = soundObject.value("soundFile").toArray();
 
                                 foreach (const QJsonValue &value2, soundFiles) {
-                                    QJsonObject soundFileObject = value2.toObject();
-                                    QString soundFileName = soundFileObject.value("filename").toString();
-                                    QStandardItem *filenameItem = new QStandardItem(soundFileName);
+                                    soundFileObject = value2.toObject();
+                                    soundFileName = soundFileObject.value("filename").toString();
+                                    filenameItem = new QStandardItem(soundFileName);
                                     filenameItem->setIcon(QIcon(":/audiotrack.svg"));
                                     filenameItem->setFlags(Qt::ItemIsEnabled
                                                            | Qt::ItemNeverHasChildren);
