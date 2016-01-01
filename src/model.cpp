@@ -19,7 +19,6 @@
 
 #include "inc/model.h"
 #include "inc/log.h"
-// #include "inc/rapidjson/document.h"
 
 
 ConfigModel::ConfigModel(QObject *parent)
@@ -28,21 +27,16 @@ ConfigModel::ConfigModel(QObject *parent)
     Q_INIT_RESOURCE(icons);
     setupConfig();
     LogMonitor *logMon = new LogMonitor();
-    // connect(logMon, &LogMonitor::sendLogLine,
-    //         this, &ConfigModel::receiveLogLine);
     connect(logMon, &LogMonitor::sendLogLine,
             this, &ConfigModel::doTheLine);
     connect(logMon, &LogMonitor::sendTookThisLong,
             this, &ConfigModel::tookThisLong);
-    // connect(this, &ConfigModel::sgn_setupConfig,
-    //         this, &ConfigModel::setupConfig);
-    // emit sgn_setupConfig();
 }
 
 void ConfigModel::setupConfig()
 {
-    QTime countTime;
-    countTime.start();
+    QTime setupTime;
+    setupTime.start();
     emit btnPbToggle();
     clear();
     it = new QDirIterator("test/packs/",
@@ -76,6 +70,12 @@ void ConfigModel::setupConfig()
                     QStandardItem *patternItem = new QStandardItem(pattern);
                     patternItem->setIcon(QIcon(":/library_music.svg"));
                     patternItem->setFlags(Qt::ItemIsEnabled);
+                    QRegularExpression regex(pattern,
+                                             QRegularExpression::DontCaptureOption
+                                             | QRegularExpression::OptimizeOnFirstUsageOption);
+                    regex.optimize();
+                    QVariant regexQV(regex);
+                    patternItem->setData(regexQV);
                     parentItem->appendRow(patternItem);
                     parentItem = patternItem;
 
@@ -108,126 +108,33 @@ void ConfigModel::setupConfig()
         }
     }
 
-    // emitPbReloadConfigSignal();
     // FIXME: Can't sort while threaded
-    sort(0);
+    // sort(0);
     // emit layoutChanged();
-    // createLookups();
     emit btnPbToggle();
-    // -- Reduce the load on doTheLine()
+    regex1 = new QRegularExpression("x([0-9]+)|^ .*|^$",
+                                    QRegularExpression::DontCaptureOption
+                                    | QRegularExpression::OptimizeOnFirstUsageOption);
+    regex1->optimize();
     QStandardItem *levelTop = this->invisibleRootItem();
     QStandardItem *levelOne = new QStandardItem();
     QStandardItem *levelTwo = new QStandardItem();
-    TOTAL = 0;
-    total.start();
-    // QRegularExpression *regex1 = new QRegularExpression();
-    // QRegularExpression *regex2 = new QRegularExpression();
-    // -- End load reduction
-    qDebug("Time elapsed: %d ms", countTime.elapsed());
+    logParseTimeMs = 0;
+    logParseTime.start();
+    qDebug("Setup time: %d ms", setupTime.elapsed());
     // qDebug() << "ended | Row Count:" << rowCount();
 }
 
-// void ConfigModel::createLookups()
-// {
-//     qDebug() << "'Bout to start buildin' a lookup!";
-//     QStandardItem *levelTop = this->invisibleRootItem();
-//     // qDebug() << "Got top level item";
-//
-//     if (levelTop->hasChildren()) {
-//         for (int i = 0; i < levelTop->rowCount(); i++) {
-//             QStandardItem *levelOne = levelTop->child(i);
-//             // qDebug() << "level one";
-//
-//             if (levelOne->hasChildren()) {
-//                 for (int j = 0; j < levelOne->rowCount(); j++) {
-//                     QStandardItem *levelTwo = levelOne->child(j);
-//                     // qDebug() << "level two";
-//                     // qDebug() << "before inserting";
-//                     Pair thePair;
-//                     thePair.regEx = QRegularExpression(levelTwo->text());
-//                     thePair.mindex = levelTwo->index();
-//                     // qDebug() << levelTwo->text()
-//                     //          << "\t"
-//                     //          << thePair.regEx
-//                     //          << "\t"
-//                     //          << thePair.mindex;
-//                     lookups.insert(levelTwo->text(), thePair);
-//                     // qDebug() << "after inserting";
-//                     // if (levelTwo->hasChildren()) {
-//                     //     for (int k = 0; k < levelTwo->rowCount(); k++) {
-//                     //         QStandardItem *levelThree = levelTwo->child(k);
-//                     //         qDebug() << "level three";
-//                     //         qDebug() << "before inserting";
-//                     //         qDebug() << levelTwo->text()
-//                     //                  << "\t"
-//                     //                  << levelThree->text();
-//                     //         lookups.insert(levelTwo->text(), levelThree->text());
-//                     //         qDebug() << "after inserting";
-//                     //     }
-//                     // }
-//                 }
-//             }
-//         }
-//     }
-//
-//     qDebug() << "We done buildin' a lookup!";
-// }
-
-void ConfigModel::receiveLogLine(QString line)
-{
-    qDebug() << "Captain, we're receiving a signal of some sort: " << line;
-}
-
-
-// Unfinished -> candidate for discard
-// void ConfigModel::getDocs()
-// {
-//     it = new QDirIterator("test/packs/",
-//                           QStringList() << "*.json", QDir::Files,
-//                           QDirIterator::Subdirectories);
-//     jsonDoc = new Document;
-
-//     while (it->hasNext()) {
-//         QString filename = it->next();
-//     }
-// }
-
-// #include "inc/re2/re2.h"
-
 void ConfigModel::doTheLine(QString line)
 {
-    total.restart();
-    // QRegularExpression *regex1 = new QRegularExpression();
-    // QRegularExpression *regex2 = new QRegularExpression();
-    QRegularExpression regex1("x([0-9]+)", QRegularExpression::DontCaptureOption);
-    QRegularExpression regex2("^ .*", QRegularExpression::DontCaptureOption);
-    // regex1.optimize();
-    // regex2.optimize();
-    // regex1->setPattern("x([0-9]+)");
-    // regex2->setPattern("^\\s(.+)");
-    // re2::RE2 re_1("x([0-9]+)");
-    // re2::RE2 re_2("^\s(.+)");
-    // std::string stdLine = line.toStdString();
+    logParseTime.restart();
 
-    // if (re2::RE2::FullMatch(stdLine , "x([0-9]+)")
-    //         | re2::RE2::FullMatch(stdLine , "^\s(.+)")) {
-    //     qDebug() << "It works!";
-    //     TOTAL += total.elapsed();
-    //     total.restart();
-    //     return;
-    // }
-
-    if ((regex1.match(line).hasMatch())
-            | (regex2.match(line).hasMatch())
-            | (line == "")) {
+    if ((regex1->match(line).hasMatch())) {
         // qDebug() << "Skipped:" << line;
-        TOTAL += total.elapsed();
-        total.restart();
+        logParseTimeMs += logParseTime.elapsed();
+        logParseTime.restart();
         return;
     }
-
-    levelTop = this->invisibleRootItem();
-    // qDebug() << "Got top level item";
 
     if (levelTop->hasChildren()) {
         for (int i = 0; i < levelTop->rowCount(); i++) {
@@ -237,47 +144,25 @@ void ConfigModel::doTheLine(QString line)
             if (levelOne->hasChildren()) {
                 for (int j = 0; j < levelOne->rowCount(); j++) {
                     levelTwo = levelOne->child(j);
-                    // qDebug() << "level two";
-                    // qDebug() << "before inserting";
-                    // Pair thePair;
-                    // thePair.regEx = QRegularExpression(levelTwo->text());
-                    // thePair.mindex = levelTwo->index();
-                    // qDebug() << levelTwo->text()
-                    //          << "\t"
-                    //          << thePair.regEx
-                    //          << "\t"
-                    //          << thePair.mindex;
-                    // lookups.insert(levelTwo->text(), thePair);
-                    regex1.setPattern(levelTwo->text());
-                    regex1.setPatternOptions(QRegularExpression::DontCaptureOption);
-                    // regex1.optimize();
-                    // qDebug() << "Made the regex pattern";
-                    // return;
+                    regex2 = levelTwo->data().toRegularExpression();
 
-                    if (regex1.match(line).hasMatch()) {
+                    if (regex2.match(line).hasMatch()) {
                         // qDebug() << "Matched" <<  line << "with" << levelTwo->text();
-                        TOTAL += total.elapsed();
-                        total.restart();
+                        logParseTimeMs += logParseTime.elapsed();
+                        logParseTime.restart();
                         return;
                     }
-
-                    // if (re2::RE2::FullMatch(line.toStdString(), levelTwo->text().toStdString())) {
-                    //     qDebug() << "Matched" <<  line << "with" << levelTwo->text();
-                    //     TOTAL += total.elapsed();
-                    //     total.restart();
-                    //     return;
-                    // }
                 }
             }
         }
     }
 
     // qDebug() << "Did not find:" << line;
-    TOTAL += total.elapsed();
-    total.restart();
+    logParseTimeMs += logParseTime.elapsed();
+    logParseTime.restart();
 }
 
 void ConfigModel::tookThisLong()
 {
-    qDebug("Total time elapsed: %d ms", TOTAL);
+    qDebug("Parsing time: %d ms", logParseTimeMs);
 }

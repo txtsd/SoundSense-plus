@@ -25,7 +25,6 @@
 #include <QtCore/QDir>
 #include <QtCore/QDirIterator>
 #include <QtCore/QFile>
-#include <QtCore/QHash>
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
@@ -36,12 +35,6 @@
 #include <QtGui/QStandardItem>
 
 class LogMonitor;
-
-
-// struct Pair {
-//     QRegularExpression regEx;
-//     QModelIndex mindex;
-// };
 
 
 class ConfigModel : public QStandardItemModel
@@ -55,26 +48,19 @@ class ConfigModel : public QStandardItemModel
     void setupConfig();
 
   private slots:
-    void receiveLogLine(QString);
-    // void createLookups();
-    void doTheLine(QString line);
+    void doTheLine(QString);
     void tookThisLong();
 
   signals:
     void btnPbToggle();
-    // void sgn_setupConfig();
 
   private:
-    void getDocs();
     QDirIterator *it;
     LogMonitor *logMon;
-    // QPair<QRegularExpression, QModelIndex>
-    // QHash<QString, Pair> lookups;
-    QTime total;
+    QTime logParseTime;
     QStandardItem *levelTop, *levelOne, *levelTwo;
-    QRegularExpression *regex1, *regex2;
-    int TOTAL;
-    // re2::RE2 *re_1, *re_2;
+    QRegularExpression *regex1, regex2;
+    int logParseTimeMs;
 };
 
 #endif  // INC_MODEL_H
