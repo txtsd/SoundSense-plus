@@ -45,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent)
     soundsConfigTreeView->setModel(configModel);
     soundsConfigTreeView->setUniformRowHeights(1);
     soundsConfigTreeView->setHeaderHidden(1);
+    soundsConfigTreeView->sortByColumn(0, Qt::AscendingOrder);
     pbReloadConfig->setHidden(1);
     // Signals & Slots
     connect(btnReloadConfig, &QPushButton::clicked,
@@ -98,4 +99,6 @@ void MainWindow::togglePbReloadConfig()
     qDebug() << pbReloadConfig->isHidden();
     pbReloadConfig->setVisible(pbReloadConfig->isHidden());
     btnReloadConfig->setVisible(pbReloadConfig->isHidden());
+    // FIXME: Move to its own slot
+    soundsConfigTreeView->sortByColumn(0, Qt::AscendingOrder);
 }

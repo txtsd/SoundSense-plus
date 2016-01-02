@@ -215,9 +215,6 @@ void ConfigModel::setupConfig()
         jsonFile->close();
     }
 
-    // FIXME: Can't sort while threaded
-    // sort(0);
-    // emit layoutChanged();
     emit btnPbToggle();
     regex1 = new QRegularExpression("x([0-9]+)|^ .*|^$",
                                     QRegularExpression::DontCaptureOption
