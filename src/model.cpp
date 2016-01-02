@@ -21,6 +21,24 @@
 #include "inc/log.h"
 
 
+enum roles { regex = Qt::UserRole + 1,
+             channel,
+             concurrency,
+             delay,
+             loop,
+             multipleMatch,
+             probability,
+             runLevel,
+             timeout,
+             balance,
+             volumeAdjustment,
+             weight,
+             author,
+             description,
+             license,
+             url
+           };
+
 ConfigModel::ConfigModel(QObject *parent)
     : QStandardItemModel(parent)
 {
@@ -44,7 +62,7 @@ void ConfigModel::setupConfig()
     QFile *jsonFile;
     QJsonDocument jsonDoc;
     QJsonArray sounds, soundFiles;
-    QJsonObject soundObject, soundFileObject;
+    QJsonObject soundObject, soundFileObject, attrObject;
     it = new QDirIterator("test/packs/",
                           QStringList() << "*.json", QDir::Files,
                           QDirIterator::Subdirectories);
@@ -82,7 +100,48 @@ void ConfigModel::setupConfig()
                         QVariant regexQV(regex);
                         patternItem->setIcon(QIcon(":/library_music.svg"));
                         patternItem->setFlags(Qt::ItemIsEnabled);
-                        patternItem->setData(regexQV);
+                        patternItem->setData(regexQV, roles::regex);
+
+                        if (soundObject.contains("channel")) {
+                            QVariant tempQV(soundObject.value("channel").toString());
+                            patternItem->setData(tempQV, roles::channel);
+                        }
+
+                        if (soundObject.contains("concurrency")) {
+                            QVariant tempQV(soundObject.value("concurrency").toInt());
+                            patternItem->setData(tempQV, roles::concurrency);
+                        }
+
+                        if (soundObject.contains("delay")) {
+                            QVariant tempQV(soundObject.value("delay").toInt());
+                            patternItem->setData(tempQV, roles::delay);
+                        }
+
+                        if (soundObject.contains("loop")) {
+                            QVariant tempQV(soundObject.value("loop").toString());
+                            patternItem->setData(tempQV, roles::loop);
+                        }
+
+                        if (soundObject.contains("multipleMatch")) {
+                            QVariant tempQV(soundObject.value("multipleMatch").toBool());
+                            patternItem->setData(tempQV, roles::multipleMatch);
+                        }
+
+                        if (soundObject.contains("probability")) {
+                            QVariant tempQV(soundObject.value("probability").toInt());
+                            patternItem->setData(tempQV, roles::probability);
+                        }
+
+                        if (soundObject.contains("runLevel")) {
+                            QVariant tempQV(soundObject.value("runLevel").toInt());
+                            patternItem->setData(tempQV, roles::runLevel);
+                        }
+
+                        if (soundObject.contains("timeout")) {
+                            QVariant tempQV(soundObject.value("timeout").toInt());
+                            patternItem->setData(tempQV, roles::timeout);
+                        }
+
                         parentItem->appendRow(patternItem);
                         parentItem = patternItem;
 
@@ -96,6 +155,46 @@ void ConfigModel::setupConfig()
                                 filenameItem->setIcon(QIcon(":/audiotrack.svg"));
                                 filenameItem->setFlags(Qt::ItemIsEnabled
                                                        | Qt::ItemNeverHasChildren);
+
+                                if (soundFileObject.contains("balance")) {
+                                    QVariant tempQV(soundFileObject.value("balance").toString());
+                                    filenameItem->setData(tempQV, roles::balance);
+                                }
+
+                                if (soundFileObject.contains("volumeAdjustment")) {
+                                    QVariant tempQV(soundFileObject.value("volumeAdjustment").toString());
+                                    filenameItem->setData(tempQV, roles::volumeAdjustment);
+                                }
+
+                                if (soundFileObject.contains("weight")) {
+                                    QVariant tempQV(soundFileObject.value("weight").toInt());
+                                    filenameItem->setData(tempQV, roles::weight);
+                                }
+
+                                if (soundFileObject.contains("attribution")) {
+                                    attrObject = soundFileObject.value("attribution").toObject();
+
+                                    if (attrObject.contains("author")) {
+                                        QVariant tempQV(attrObject.value("author").toString());
+                                        filenameItem->setData(tempQV, roles::author);
+                                    }
+
+                                    if (attrObject.contains("description")) {
+                                        QVariant tempQV(attrObject.value("description").toString());
+                                        filenameItem->setData(tempQV, roles::description);
+                                    }
+
+                                    if (attrObject.contains("license")) {
+                                        QVariant tempQV(attrObject.value("license").toString());
+                                        filenameItem->setData(tempQV, roles::license);
+                                    }
+
+                                    if (attrObject.contains("url")) {
+                                        QVariant tempQV(attrObject.value("url").toString());
+                                        filenameItem->setData(tempQV, roles::url);
+                                    }
+                                }
+
                                 parentItem->appendRow(filenameItem);
                             }
                         }
@@ -152,7 +251,7 @@ void ConfigModel::doTheLine(QString line)
             if (levelOne->hasChildren()) {
                 for (int j = 0; j < levelOne->rowCount(); j++) {
                     levelTwo = levelOne->child(j);
-                    regex2 = levelTwo->data().toRegularExpression();
+                    regex2 = levelTwo->data(roles::regex).toRegularExpression();
 
                     if (regex2.match(line).hasMatch()) {
                         // qDebug() << "Matched" <<  line << "with" << levelTwo->text();
