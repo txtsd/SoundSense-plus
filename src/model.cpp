@@ -53,71 +53,67 @@ void ConfigModel::setupConfig()
         filename = it->next();
         // qDebug() << filename;
         parentItem = this->invisibleRootItem();
+        jsonFile = new QFile();
+        jsonFile->setFileName(filename);
+        // qDebug() << filename;
 
-        if (!filename.endsWith("customHost.json")
-                && !filename.endsWith("autoUpdater.json")) {
-            jsonFile = new QFile();
-            jsonFile->setFileName(filename);
-            // qDebug() << filename;
+        if (jsonFile->open(QIODevice::ReadOnly | QIODevice::Text)) {
+            jsonFileData = jsonFile->readAll();
+            jsonDoc = QJsonDocument::fromJson(jsonFileData.toUtf8());
 
-            if (jsonFile->open(QIODevice::ReadOnly | QIODevice::Text)) {
-                jsonFileData = jsonFile->readAll();
-                jsonDoc = QJsonDocument::fromJson(jsonFileData.toUtf8());
+            if (jsonDoc.isObject() && jsonDoc.object().contains("sounds")) {
+                sounds = jsonDoc.object().value("sounds").toArray();
+                fileItem = new QStandardItem(filename/*.remove(0, 45)*/);
+                fileItem->setIcon(QIcon(":/folder.svg"));
+                fileItem->setFlags(Qt::ItemIsEnabled);
+                parentItem->appendRow(fileItem);
+                parentItem = fileItem;
 
-                if (jsonDoc.isObject() && jsonDoc.object().contains("sounds")) {
-                    sounds = jsonDoc.object().value("sounds").toArray();
-                    fileItem = new QStandardItem(filename/*.remove(0, 45)*/);
-                    fileItem->setIcon(QIcon(":/folder.svg"));
-                    fileItem->setFlags(Qt::ItemIsEnabled);
-                    parentItem->appendRow(fileItem);
-                    parentItem = fileItem;
+                foreach (const QJsonValue &value, sounds) {
+                    soundObject = value.toObject();
 
-                    foreach (const QJsonValue &value, sounds) {
-                        soundObject = value.toObject();
+                    if (soundObject.contains("logPattern")) {
+                        pattern = soundObject.value("logPattern").toString();
+                        patternItem = new QStandardItem(pattern);
+                        QRegularExpression regex(pattern,
+                                                 QRegularExpression::DontCaptureOption
+                                                 | QRegularExpression::OptimizeOnFirstUsageOption);
+                        regex.optimize();
+                        QVariant regexQV(regex);
+                        patternItem->setIcon(QIcon(":/library_music.svg"));
+                        patternItem->setFlags(Qt::ItemIsEnabled);
+                        patternItem->setData(regexQV);
+                        parentItem->appendRow(patternItem);
+                        parentItem = patternItem;
 
-                        if (soundObject.contains("logPattern")) {
-                            pattern = soundObject.value("logPattern").toString();
-                            patternItem = new QStandardItem(pattern);
-                            QRegularExpression regex(pattern,
-                                                     QRegularExpression::DontCaptureOption
-                                                     | QRegularExpression::OptimizeOnFirstUsageOption);
-                            regex.optimize();
-                            QVariant regexQV(regex);
-                            patternItem->setIcon(QIcon(":/library_music.svg"));
-                            patternItem->setFlags(Qt::ItemIsEnabled);
-                            patternItem->setData(regexQV);
-                            parentItem->appendRow(patternItem);
-                            parentItem = patternItem;
+                        if (soundObject.contains("soundFile")) {
+                            soundFiles = soundObject.value("soundFile").toArray();
 
-                            if (soundObject.contains("soundFile")) {
-                                soundFiles = soundObject.value("soundFile").toArray();
-
-                                foreach (const QJsonValue &value2, soundFiles) {
-                                    soundFileObject = value2.toObject();
-                                    soundFileName = soundFileObject.value("filename").toString();
-                                    filenameItem = new QStandardItem(soundFileName);
-                                    filenameItem->setIcon(QIcon(":/audiotrack.svg"));
-                                    filenameItem->setFlags(Qt::ItemIsEnabled
-                                                           | Qt::ItemNeverHasChildren);
-                                    parentItem->appendRow(filenameItem);
-                                }
+                            foreach (const QJsonValue &value2, soundFiles) {
+                                soundFileObject = value2.toObject();
+                                soundFileName = soundFileObject.value("filename").toString();
+                                filenameItem = new QStandardItem(soundFileName);
+                                filenameItem->setIcon(QIcon(":/audiotrack.svg"));
+                                filenameItem->setFlags(Qt::ItemIsEnabled
+                                                       | Qt::ItemNeverHasChildren);
+                                parentItem->appendRow(filenameItem);
                             }
-
-                            parentItem = parentItem->parent();
                         }
+
+                        parentItem = parentItem->parent();
                     }
-
-                    parentItem = parentItem->parent();
                 }
-            }
 
-            else {
-                qDebug() << "QIODevice derped out in model.cpp";
-                return;
+                parentItem = parentItem->parent();
             }
-
-            jsonFile->close();
         }
+
+        else {
+            qDebug() << "QIODevice derped out in model.cpp";
+            return;
+        }
+
+        jsonFile->close();
     }
 
     // FIXME: Can't sort while threaded
