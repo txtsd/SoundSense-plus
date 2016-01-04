@@ -1,4 +1,4 @@
-QT                      +=  widgets multimedia svg # xml concurrent
+QT                      +=  widgets multimedia svg
 
 TARGET                   =  SoundSense+
 TEMPLATE                 =  app
@@ -19,9 +19,6 @@ HEADERS                 +=  inc/gui.h \
                             inc/model.h \
                             inc/audio.h \
                             inc/log.h
-
-# INCLUDEPATH             += inc/rapidjson \
-#                         += inc/re2
 
 RESOURCES               +=  icons.qrc
 
