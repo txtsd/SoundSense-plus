@@ -37,6 +37,25 @@
 class LogMonitor;
 
 
+enum roles { regex = Qt::UserRole + 1,
+             channel,
+             concurrency,
+             delay,
+             loop,
+             multipleMatch,
+             probability,
+             runLevel,
+             timeout,
+             filename,
+             balance,
+             volumeAdjustment,
+             weight,
+             author,
+             description,
+             license,
+             url
+           };
+
 class ConfigModel : public QStandardItemModel
 {
     Q_OBJECT

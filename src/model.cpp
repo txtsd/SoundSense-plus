@@ -21,24 +21,6 @@
 #include "inc/log.h"
 
 
-enum roles { regex = Qt::UserRole + 1,
-             channel,
-             concurrency,
-             delay,
-             loop,
-             multipleMatch,
-             probability,
-             runLevel,
-             timeout,
-             balance,
-             volumeAdjustment,
-             weight,
-             author,
-             description,
-             license,
-             url
-           };
-
 ConfigModel::ConfigModel(QObject *parent)
     : QStandardItemModel(parent)
 {
