@@ -57,6 +57,12 @@ MainWindow::MainWindow(QWidget *parent)
     // Tests
 }
 
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    t.quit();
+    event->accept();
+}
+
 void MainWindow::on_actionLogLocation_triggered()
 {
     QFileDialog::getOpenFileName(this, tr("gamelog.txt location"), ".",

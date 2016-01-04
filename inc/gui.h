@@ -24,6 +24,7 @@
 #include <QtCore/QModelIndex>
 #include <QtCore/QThread>
 #include <QtCore/QTime>
+#include <QtGui/QCloseEvent>
 #include <QtGui/QFont>
 #include <QtGui/QIcon>
 #include <QtGui/QScreen>
@@ -41,6 +42,9 @@ class MainWindow : public QMainWindow, private Ui::MainWindow
 
   public:
     MainWindow(QWidget *parent = 0);
+
+  protected:
+    void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
   public slots:
     void togglePbReloadConfig();
