@@ -81,7 +81,7 @@ void MainWindow::on_actionQuit_triggered()
 
 void MainWindow::on_actionHelp_triggered()
 {
-    QMessageBox::information(this, tr("How to use"),
+    QMessageBox::information(this, tr("Help"),
                              tr("Herp the derp!"));
 }
 
